@@ -10,12 +10,10 @@ type BaseResource struct {
 	base_url string
 }
 
-type Options map[string]interface{}
-
-func (b *BaseResource) all(id string, data map[string]interface{}, options Options) *http.Response {
-	return b.get_url(b.base_url, data, options)
+func (b *BaseResource) all(id string, data razorpay.Payload, options razorpay.Options) *http.Response {
+	return b.getUrl(b.base_url, data, options)
 }
 
-func (b *BaseResource) get_url(url string, data map[string]interface{}, options Options) *http.Response {
-	return b.client.get(url, data, options)
+func (b *BaseResource) getUrl(url string, data razorpay.Payload, options razorpay.Options) *http.Response {
+	return b.client.Get(url, data, options)
 }
