@@ -1,6 +1,10 @@
 package razorpay
 
-import "net/http"
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+)
 
 type Auth struct {
 	key    string
@@ -38,32 +42,74 @@ func (c *Client) Get(url string, data Payload, options Options) (*http.Response,
 
 	req, _ := http.NewRequest("GET", encoded_url, nil)
 
-	c.constructHeaders(req, options)
+	req.SetBasicAuth(c.auth.key, c.auth.secret)
+
+	c.addHeaders(req, options)
 
 	return client.Do(req)
 }
 
-func (c *Client) Post(url string, data Payload, options Options) (*http.Response, error) {
+func (c *Client) PostJson(requestUrl string, payload Payload, options Options) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
-	req, _ := http.NewRequest("GET", encoded_url, nil)
+	jsonStr, err := json.Marshal(payload)
 
-	c.constructHeaders(req, options)
+	if err != nil {
+		panic(err)
+	}
+
+	req, _ := http.NewRequest("POST", requestUrl, bytes.NewBuffer(jsonStr))
+
+	req.SetBasicAuth(c.auth.key, c.auth.secret)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	c.addHeaders(req, options)
 
 	return client.Do(req)
 }
 
-func (c *Client) constructHeaders(req *http.Request, options Options) {
+func (c *Client) PutJson(requestUrl string, payload Payload, options Options) (*http.Response, error) {
+
+	client := c.getHttpClient()
+
+	jsonStr, err := json.Marshal(payload)
+
+	if err != nil {
+		panic(err)
+	}
+
+	req, _ := http.NewRequest("PUT", requestUrl, bytes.NewBuffer(jsonStr))
 
 	req.SetBasicAuth(c.auth.key, c.auth.secret)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	c.addHeaders(req, options)
+
+	return client.Do(req)
+}
+
+func (c *Client) Delete(requestUrl string, options Options) (*http.Response, error) {
+
+	client := c.getHttpClient()
+
+	req, _ := http.NewRequest("DELETE", requestUrl, nil)
+
+	req.SetBasicAuth(c.auth.key, c.auth.secret)
+
+	c.addHeaders(req, options)
+
+	return client.Do(req)
+}
+
+func (c *Client) addHeaders(req *http.Request, options Options) {
 
 	req.Header.Set("User-Agent", "Razorpay-Go/"+getSdkVersion())
 
 	if val, ok := options["Content-Type"]; ok {
 		req.Header.Set("Content-Type", val)
-	} else {
-		req.Header.Set("Content-Type", "application/json")
 	}
 }
 
