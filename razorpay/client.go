@@ -11,10 +11,6 @@ type Auth struct {
 	secret string
 }
 
-type Options map[string]string
-
-type Payload map[string]interface{}
-
 type Client struct {
 	auth        Auth
 	base_url    string
@@ -35,10 +31,13 @@ func (c *Client) setBaseUrl(url string) {
 	c.base_url = url
 }
 
-func (c *Client) parseOptions(options Options) {
+func (c *Client) parseOptions(options map[string]string) {
 }
 
-func (c *Client) Get(url string, data Payload, options Options) (*http.Response, error) {
+func (c *Client) Get(
+	url string,
+	data map[string]interface{},
+	options map[string]string) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
@@ -53,7 +52,10 @@ func (c *Client) Get(url string, data Payload, options Options) (*http.Response,
 	return client.Do(req)
 }
 
-func (c *Client) PostJson(requestUrl string, payload Payload, options Options) (*http.Response, error) {
+func (c *Client) PostJson(
+	requestUrl string,
+	payload map[string]interface{},
+	options map[string]string) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
@@ -74,7 +76,10 @@ func (c *Client) PostJson(requestUrl string, payload Payload, options Options) (
 	return client.Do(req)
 }
 
-func (c *Client) PutJson(requestUrl string, payload Payload, options Options) (*http.Response, error) {
+func (c *Client) PutJson(
+	requestUrl string,
+	payload map[string]interface{},
+	options map[string]string) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
@@ -95,7 +100,9 @@ func (c *Client) PutJson(requestUrl string, payload Payload, options Options) (*
 	return client.Do(req)
 }
 
-func (c *Client) Delete(requestUrl string, options Options) (*http.Response, error) {
+func (c *Client) Delete(
+	requestUrl string,
+	options map[string]string) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
@@ -108,7 +115,7 @@ func (c *Client) Delete(requestUrl string, options Options) (*http.Response, err
 	return client.Do(req)
 }
 
-func (c *Client) addHeaders(req *http.Request, options Options) {
+func (c *Client) addHeaders(req *http.Request, options map[string]string) {
 
 	req.Header.Set("User-Agent", "Razorpay-Go/"+getSdkVersion())
 
