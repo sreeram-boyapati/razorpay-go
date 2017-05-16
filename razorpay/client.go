@@ -11,6 +11,10 @@ type Auth struct {
 	secret string
 }
 
+type Options map[string]string
+
+type Payload map[string]interface{}
+
 type Client struct {
 	auth        Auth
 	base_url    string
