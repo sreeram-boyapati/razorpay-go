@@ -3,6 +3,8 @@ package razorpay
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/sreeram-boyapati/razorpay-go/razorpay/constants"
 	"net/http"
 )
 
@@ -27,13 +29,6 @@ func (c *Client) getAppDetails() map[string]string {
 	return c.app_details
 }
 
-func (c *Client) setBaseUrl(url string) {
-	c.base_url = url
-}
-
-func (c *Client) parseOptions(options map[string]string) {
-}
-
 func (c *Client) Get(
 	url string,
 	data map[string]interface{},
@@ -41,7 +36,9 @@ func (c *Client) Get(
 
 	client := c.getHttpClient()
 
-	encoded_url := parseUrlOptions(url, data)
+	newUrl := fmt.Sprintf("%s/%s", constants.BASE_URL, url)
+
+	encoded_url := parseUrlOptions(newUrl, data)
 
 	req, _ := http.NewRequest("GET", encoded_url, nil)
 
@@ -53,19 +50,17 @@ func (c *Client) Get(
 }
 
 func (c *Client) PostJson(
-	requestUrl string,
+	url string,
 	payload map[string]interface{},
 	options map[string]string) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
-	jsonStr, err := json.Marshal(payload)
+	jsonStr, _ := json.Marshal(payload)
 
-	if err != nil {
-		panic(err)
-	}
+	newUrl := fmt.Sprintf("%s/%s", constants.BASE_URL, url)
 
-	req, _ := http.NewRequest("POST", requestUrl, bytes.NewBuffer(jsonStr))
+	req, _ := http.NewRequest("POST", newUrl, bytes.NewBuffer(jsonStr))
 
 	req.SetBasicAuth(c.auth.key, c.auth.secret)
 
@@ -77,19 +72,17 @@ func (c *Client) PostJson(
 }
 
 func (c *Client) PutJson(
-	requestUrl string,
+	url string,
 	payload map[string]interface{},
 	options map[string]string) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
-	jsonStr, err := json.Marshal(payload)
+	jsonStr, _ := json.Marshal(payload)
 
-	if err != nil {
-		panic(err)
-	}
+	newUrl := fmt.Sprintf("%s/%s", constants.BASE_URL, url)
 
-	req, _ := http.NewRequest("PUT", requestUrl, bytes.NewBuffer(jsonStr))
+	req, _ := http.NewRequest("PUT", newUrl, bytes.NewBuffer(jsonStr))
 
 	req.SetBasicAuth(c.auth.key, c.auth.secret)
 
@@ -101,12 +94,14 @@ func (c *Client) PutJson(
 }
 
 func (c *Client) Delete(
-	requestUrl string,
+	url string,
 	options map[string]string) (*http.Response, error) {
 
 	client := c.getHttpClient()
 
-	req, _ := http.NewRequest("DELETE", requestUrl, nil)
+	newUrl := fmt.Sprintf("%s/%s", constants.BASE_URL, url)
+
+	req, _ := http.NewRequest("DELETE", newUrl, nil)
 
 	req.SetBasicAuth(c.auth.key, c.auth.secret)
 

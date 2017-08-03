@@ -1,21 +1,12 @@
 package resources
 
 import (
-	"fmt"
 	"github.com/sreeram-boyapati/razorpay-go/razorpay"
 	"net/http"
 )
 
 type BaseResource struct {
-	client   razorpay.Client
-	base_url string
-}
-
-func (b *BaseResource) all(
-	id string,
-	data map[string]interface{},
-	options map[string]string) (*http.Response, error) {
-	return b.getUrl(b.base_url, data, options)
+	client razorpay.Client
 }
 
 func (b *BaseResource) getUrl(
@@ -43,14 +34,4 @@ func (b *BaseResource) deleteUrl(
 	url string,
 	options map[string]string) (*http.Response, error) {
 	return b.client.Delete(url, options)
-}
-
-func (b *BaseResource) fetch(
-	id string,
-	data map[string]interface{},
-	options map[string]string) (*http.Response, error) {
-
-	url := fmt.Sprintf("%d/%d", b.base_url, id)
-
-	return b.getUrl(url, data, options)
 }
