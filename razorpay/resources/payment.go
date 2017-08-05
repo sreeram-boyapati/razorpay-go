@@ -14,7 +14,7 @@ func (p *Payment) all(
 	data map[string]interface{},
 	options map[string]string) (*http.Response, error) {
 
-	return p.base.getUrl(constants.PAYMENTS_URL, data, options)
+	return p.base.getUrl(constants.PAYMENT_URL, data, options)
 }
 
 func (p *Payment) fetch(
@@ -22,7 +22,7 @@ func (p *Payment) fetch(
 	data map[string]interface{},
 	options map[string]string) (*http.Response, error) {
 
-	url := fmt.Sprintf("%s/%s", constants.PAYMENTS_URL, id)
+	url := fmt.Sprintf("%s/%s", constants.PAYMENT_URL, id)
 
 	return p.base.getUrl(url, data, options)
 }
@@ -33,7 +33,7 @@ func (p *Payment) capture(
 	data map[string]interface{},
 	options map[string]string) (*http.Response, error) {
 
-	url := fmt.Sprintf("%s/%s/capture", constants.PAYMENTS_URL, id)
+	url := fmt.Sprintf("%s/%s/capture", constants.PAYMENT_URL, id)
 	// Amount should be in paisa
 
 	data["amount"] = amount
@@ -47,7 +47,7 @@ func (p *Payment) refund(
 	data map[string]interface{},
 	options map[string]string) (*http.Response, error) {
 
-	url := fmt.Sprintf("%s/%s/refund", constants.PAYMENTS_URL, id)
+	url := fmt.Sprintf("%s/%s/refund", constants.PAYMENT_URL, id)
 	// Amount should be in paisa
 
 	data["amount"] = amount
