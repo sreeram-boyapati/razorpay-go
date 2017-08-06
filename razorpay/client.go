@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sreeram-boyapati/razorpay-go/razorpay/constants"
+	"github.com/sreeram-boyapati/razorpay-go/razorpay/errors"
 	"net/http"
+	"time"
 )
 
 type Auth struct {
@@ -14,27 +16,53 @@ type Auth struct {
 }
 
 type Client struct {
-	auth        Auth
-	base_url    string
-	app_details map[string]string
+	auth       Auth
+	appDetails map[string]string
 }
 
 func (c *Client) setAppDetails(data map[string]string) {
 	for k, v := range data {
-		c.app_details[k] = v
+		c.appDetails[k] = v
 	}
 }
 
 func (c *Client) getAppDetails() map[string]string {
-	return c.app_details
+	return c.appDetails
+}
+
+func (c *Client) makeRequestAndGetResponse(req *http.Request) (*http.Response, error) {
+
+	client := c.getHttpClient()
+
+	response, err := client.Do(req)
+
+	if response.StatusCode >= constants.HTTP_STATUS_OK &&
+		response.StatusCode < constants.HTTP_STATUS_REDIRECT {
+		return response, err
+	}
+
+	// Raise an error depending on the type of error in response
+	var jsonResponse errors.ErrorJson
+	json.NewDecoder(response.Body).Decode(jsonResponse)
+	error_data := jsonResponse.ErrorData
+
+	switch error_data.GetInternalErrorCode() {
+	case errors.SERVER_ERROR:
+		return nil, &errors.ServerError{Message: error_data.GetDescription()}
+	case errors.GATEWAY_ERROR:
+		return nil, &errors.GatewayError{Message: error_data.GetDescription()}
+	case errors.BAD_REQUEST_ERROR:
+	default:
+		return nil, &errors.BadRequestError{Message: error_data.GetDescription()}
+	}
+
+	return response, err
 }
 
 func (c *Client) Get(
 	url string,
 	data map[string]interface{},
 	options map[string]string) (*http.Response, error) {
-
-	client := c.getHttpClient()
 
 	newUrl := fmt.Sprintf("%s/%s", constants.BASE_URL, url)
 
@@ -46,15 +74,42 @@ func (c *Client) Get(
 
 	c.addHeaders(req, options)
 
-	return client.Do(req)
+	return c.makeRequestAndGetResponse(req)
+}
+
+func (c *Client) MakeRequestAndGetResponse(
+	req *http.Request) (*http.Response, error) {
+
+	client := c.getHttpClient()
+
+	response, err := client.Do(req)
+
+	if response.StatusCode >= constants.HTTP_STATUS_OK &&
+		response.StatusCode < constants.HTTP_STATUS_REDIRECT {
+		return response, err
+	}
+
+	// Raise an error depending on the type of error in response
+	var jsonResponse errors.ErrorJson
+	json.NewDecoder(response.Body).Decode(jsonResponse)
+	error_data := jsonResponse.errorData
+
+	switch error_data.getInternalErrorCode() {
+	case errors.SERVER_ERROR:
+		return nil, errors.ServerError(error_data.getDescription())
+	case errors.GATEWAY_ERROR:
+		return nil, errors.GatewayError(error_data.getDescription())
+	case errors.BAD_REQUEST_ERROR:
+	default:
+		return nil, errors.BAD_REQUEST_ERROR(error_data.getDescription())
+	}
+
 }
 
 func (c *Client) PostJson(
 	url string,
 	payload map[string]interface{},
 	options map[string]string) (*http.Response, error) {
-
-	client := c.getHttpClient()
 
 	jsonStr, _ := json.Marshal(payload)
 
@@ -68,15 +123,13 @@ func (c *Client) PostJson(
 
 	c.addHeaders(req, options)
 
-	return client.Do(req)
+	return c.makeRequestAndGetResponse(req)
 }
 
 func (c *Client) PutJson(
 	url string,
 	payload map[string]interface{},
 	options map[string]string) (*http.Response, error) {
-
-	client := c.getHttpClient()
 
 	jsonStr, _ := json.Marshal(payload)
 
@@ -90,14 +143,12 @@ func (c *Client) PutJson(
 
 	c.addHeaders(req, options)
 
-	return client.Do(req)
+	return c.makeRequestAndGetResponse(req)
 }
 
 func (c *Client) Delete(
 	url string,
 	options map[string]string) (*http.Response, error) {
-
-	client := c.getHttpClient()
 
 	newUrl := fmt.Sprintf("%s/%s", constants.BASE_URL, url)
 
@@ -107,7 +158,7 @@ func (c *Client) Delete(
 
 	c.addHeaders(req, options)
 
-	return client.Do(req)
+	return c.makeRequestAndGetResponse(req)
 }
 
 func (c *Client) addHeaders(req *http.Request, options map[string]string) {
@@ -121,7 +172,7 @@ func (c *Client) addHeaders(req *http.Request, options map[string]string) {
 
 func (c *Client) getHttpClient() *http.Client {
 
-	httpClient := &http.Client{}
+	httpClient := &http.Client{Timeout: 10 * time.Second}
 
 	return httpClient
 }

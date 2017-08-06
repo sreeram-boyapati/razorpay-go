@@ -1,6 +1,6 @@
 package constants
 
 const (
-	OK       = 200
-	REDIRECT = 300
+	HTTP_STATUS_OK       = 200
+	HTTP_STATUS_REDIRECT = 300
 )
